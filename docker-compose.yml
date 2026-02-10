@@ -1,0 +1,14 @@
+services:
+    db:
+        image: postgres:16
+        container_name: pg
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: stockman_db
+            POSTGRES_USER: marckux
+            POSTGRES_PASSWORD: secret
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
