@@ -4,13 +4,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.marckux.stockman.auth.domain.model.Role;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-  private final UserRepository repository;
+  private final JpaUserRepository repository;
   private final PasswordEncoder encoder;
 
   @Override
@@ -20,14 +22,13 @@ public class DataInitializer implements CommandLineRunner {
           .email("super_admin@example.mail")
           .name("Super Admin")
           .password(encoder.encode("super"))
-          .role(Role.SUPER_ADMIN)
+          .role(Role.SUPER_ADMIN.name())
           .isActive(true)
           .build();
       repository.save(superAdmin);
-      System.out.println("🚀 Usuario Super Admin creado; " + 
-        "email: super_admin@example.mail " +
-        "password: super"
-      );
+      System.out.println("🚀 Usuario Super Admin creado; " +
+          "email: super_admin@example.mail " +
+          "password: super");
     }
   }
 }

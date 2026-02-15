@@ -1,4 +1,4 @@
-package com.marckux.stockman.auth.infrastructure.security;
+package com.marckux.stockman.auth.infrastructure.security.services;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -10,19 +10,33 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.marckux.stockman.auth.domain.model.User;
+import com.marckux.stockman.auth.domain.ports.out.TokenProviderPort;
+import com.marckux.stockman.auth.infrastructure.security.mappers.SecurityUserMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 
 @Service
-public class JwtService {
+@RequiredArgsConstructor
+public class JwtService implements TokenProviderPort {
   @Value("${jwt.secret}")
   private String jwtSecret;
   @Value("${jwt.expiration}")
   private int jwtExpiration;
 
+  private final SecurityUserMapper mapper;
+
   private SecretKey getSecretKey() {
     return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Override
+  public String generateToken(User user) {
+    return generateToken(mapper.toUserDetails(user));
+
   }
 
   public String generateToken(UserDetails user) {

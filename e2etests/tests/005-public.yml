@@ -1,0 +1,2 @@
+method: GET
+endpoint: /api/public/check-health

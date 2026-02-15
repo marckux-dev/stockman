@@ -1,4 +1,4 @@
-package com.marckux.stockman.auth.infrastructure.security;
+package com.marckux.stockman.auth.infrastructure.security.filters;
 
 import java.io.IOException;
 
@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.marckux.stockman.auth.infrastructure.security.services.JwtService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
