@@ -34,6 +34,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
 
   private User toDomain(UserEntity userEntity) {
     return User.builder()
+        .id(userEntity.getId())
         .email(Email.of(userEntity.getEmail()))
         .hashedPassword(HashedPassword.of(userEntity.getPassword()))
         .name(userEntity.getName())
@@ -44,6 +45,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
 
   private UserEntity toEntity(User user) {
     return UserEntity.builder()
+        .id(user.getId())
         .email(user.getEmail().getValue())
         .password(user.getHashedPassword().getValue())
         .name(user.getName())

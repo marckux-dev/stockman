@@ -1,0 +1,8 @@
+method: POST
+endpoint: /api/auth/register
+expected: 400
+body:
+  email: "user@example.mail"
+  password: "Abcd1234"
+  name: "Jhon Doe"
+

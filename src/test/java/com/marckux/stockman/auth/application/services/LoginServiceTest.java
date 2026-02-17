@@ -6,11 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import com.marckux.stockman.auth.application.dtos.AuthResponse;
 import com.marckux.stockman.auth.application.dtos.LoginRequest;
+import com.marckux.stockman.auth.application.dtos.LoginResponse;
+import com.marckux.stockman.auth.application.ports.out.IdentityManagerPort;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
@@ -20,16 +19,15 @@ import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 import com.marckux.stockman.shared.BaseTest;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest extends BaseTest {
+public class LoginServiceTest extends BaseTest {
 
   @Mock
-  private AuthenticationManager authenticationManager;
+  private IdentityManagerPort identityManager;
 
   @Mock
   private TokenProviderPort tokenProvider;
@@ -38,7 +36,7 @@ public class AuthServiceTest extends BaseTest {
   private UserRepositoryPort userRepository;
 
   @InjectMocks
-  private AuthService authService;
+  private LoginService loginService;
 
   @Test
   @DisplayName("Debería hacer login correctamente y devolver un token")
@@ -56,14 +54,12 @@ public class AuthServiceTest extends BaseTest {
         .isActive(true)
         .build();
 
-    when(authenticationManager
-        .authenticate(any(UsernamePasswordAuthenticationToken.class)))
-        .thenReturn(null);
+    doNothing().when(identityManager).authenticate(anyString(), anyString());
     when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
     when(tokenProvider.generateToken(user)).thenReturn(token);
 
     // WHEN
-    AuthResponse response = authService.login(request);
+    LoginResponse response = loginService.login(request);
 
     // THEN
     assertNotNull(response);

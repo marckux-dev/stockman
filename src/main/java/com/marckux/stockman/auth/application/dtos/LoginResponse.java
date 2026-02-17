@@ -1,5 +1,5 @@
 package com.marckux.stockman.auth.application.dtos;
 
-public record AuthResponse (
+public record LoginResponse (
   String token
 ){}
