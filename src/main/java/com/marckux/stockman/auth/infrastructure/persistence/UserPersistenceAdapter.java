@@ -1,6 +1,9 @@
 package com.marckux.stockman.auth.infrastructure.persistence;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -28,8 +31,27 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   public Optional<User> findByEmail(String email) {
     return jpaUserRepository
         .findByEmail(email)
+        .map(this::toDomain);
+  }
+
+  @Override
+  public List<User> findAll() {
+    return jpaUserRepository
+        .findAll()
+        .stream()
         .map(this::toDomain)
-    ;
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public Optional<User> findById(UUID id) {
+    return jpaUserRepository
+      .findById(id)
+      .map(this::toDomain);  
+  }
+  
+  public JpaUserRepository getJpaUserRepository() {
+    return jpaUserRepository;
   }
 
   private User toDomain(UserEntity userEntity) {
@@ -54,5 +76,6 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
         .build();
 
   }
+
 
 }

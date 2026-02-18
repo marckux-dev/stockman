@@ -12,10 +12,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.marckux.stockman.auth.domain.exceptions.DomainException;
 import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.shared.infrastructure.rest.dto.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(UnsupportedOperationException.class)
+  public ResponseEntity<ErrorResponse> handleUnsupportedOperationException (UnsupportedOperationException ex) {
+    return buildResponse(HttpStatus.NOT_IMPLEMENTED, ex.getMessage());
+  }
 
   @ExceptionHandler(InvalidAttributeException.class)
   public ResponseEntity<ErrorResponse> handleInvalidAttributeException(DomainException ex) {
@@ -49,6 +55,11 @@ public class GlobalExceptionHandler {
 public ResponseEntity<ErrorResponse> handleExpiredJwtException(io.jsonwebtoken.ExpiredJwtException ex) {
     return buildResponse(HttpStatus.UNAUTHORIZED, "El token ha expirado. Por favor, inicie sesión de nuevo.");
 }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleResourceNotFoundException (ResourceNotFoundException ex) {
+    return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+  }
 
   private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
     var errorResponse = new ErrorResponse(status.value(), message, System.currentTimeMillis());

@@ -6,14 +6,16 @@ public record UserResponse(
     String id,
     String email,
     String name,
-    String role
+    String role,
+    boolean isActive
 ) {
   public static UserResponse fromDomain(User user) {
     return new UserResponse(
         user.getId().toString(),
         user.getEmail().getValue(),
         user.getName(),
-        user.getRole().name()
+        user.getRole().name(),
+        user.getIsActive()
     );
   }
 }

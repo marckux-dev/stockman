@@ -1,4 +1,4 @@
-package com.marckux.stockman.auth.application.services;
+package com.marckux.stockman.auth.application.services.auth;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,9 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
-public class LoginServiceTest extends BaseTest {
+public class LoginTest extends BaseTest {
 
   @Mock
   private IdentityManagerPort identityManager;
@@ -36,7 +37,7 @@ public class LoginServiceTest extends BaseTest {
   private UserRepositoryPort userRepository;
 
   @InjectMocks
-  private LoginService loginService;
+  private Login login;
 
   @Test
   @DisplayName("Debería hacer login correctamente y devolver un token")
@@ -48,6 +49,7 @@ public class LoginServiceTest extends BaseTest {
     String token = "token";
     LoginRequest request = new LoginRequest(email, password);
     User user = User.builder()
+        .id(UUID.randomUUID())
         .email(Email.of(email))
         .hashedPassword(HashedPassword.of(hashedPassword))
         .role(Role.ADMIN)
@@ -59,7 +61,7 @@ public class LoginServiceTest extends BaseTest {
     when(tokenProvider.generateToken(user)).thenReturn(token);
 
     // WHEN
-    LoginResponse response = loginService.login(request);
+    LoginResponse response = login.execute(request);
 
     // THEN
     assertNotNull(response);

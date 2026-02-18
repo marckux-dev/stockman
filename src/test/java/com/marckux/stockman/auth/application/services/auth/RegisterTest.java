@@ -1,4 +1,4 @@
-package com.marckux.stockman.auth.application.services;
+package com.marckux.stockman.auth.application.services.auth;
 
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +27,7 @@ import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 import com.marckux.stockman.shared.BaseTest;
 
 @ExtendWith(MockitoExtension.class)
-public class RegisterServiceTest extends BaseTest {
+public class RegisterTest extends BaseTest {
 
   private static String HASHED = "$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQiy38a";
 
@@ -38,7 +38,7 @@ public class RegisterServiceTest extends BaseTest {
   private PasswordHasherPort passwordHasher;
 
   @InjectMocks
-  private RegisterService registerService;
+  private Register register;
 
   @Test
   void shouldRegisterANewUserSuccessfully() {
@@ -58,7 +58,7 @@ public class RegisterServiceTest extends BaseTest {
     when(userRepository.save(any(User.class))).thenReturn(user);
     ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
     // WHEN
-    UserResponse userResponse = registerService.register(request);
+    UserResponse userResponse = register.execute(request);
     // THEN
     verify(userRepository).save(userCaptor.capture());
     User userSent = userCaptor.getValue();
