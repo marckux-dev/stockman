@@ -31,7 +31,7 @@ Con Maven Wrapper:
 ## Endpoints
 Base URL local: `http://localhost:8080`
 
-### Salud pública
+### Endpoint de ejemplo de acceso público
 ```bash
 curl -s http://localhost:8080/api/public/check-health
 ```
@@ -45,16 +45,7 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 
 La respuesta incluye `token`. Usarlo como Bearer para rutas privadas.
 
-### Cambiar password (solo usuario activo)
-```bash
-TOKEN="pega_el_token_aqui"
-curl -s -X POST http://localhost:8080/api/auth/change-password \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"currentPassword":"super","newPassword":"StrongPass1!"}'
-```
-
-### Salud privada (requiere token)
+### Ruta privada (requiere token)
 ```bash
 TOKEN="pega_el_token_aqui"
 curl -s http://localhost:8080/api/private/check-health \
@@ -68,6 +59,15 @@ curl -s -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"email":"user@example.com","password":"StrongPass1!","name":"User"}'
+```
+
+### Cambiar password (solo usuario activo)
+```bash
+TOKEN="pega_el_token_aqui"
+curl -s -X PATCH http://localhost:8080/api/auth/change-password \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"currentPassword":"StrongPass1!","newPassword":"StrongPass2!"}'
 ```
 
 ### Listar usuarios (solo ADMIN o SUPER_ADMIN)

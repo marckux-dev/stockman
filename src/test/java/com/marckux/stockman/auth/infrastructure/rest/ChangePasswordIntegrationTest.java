@@ -38,7 +38,7 @@ public class ChangePasswordIntegrationTest extends IntegrationBaseTest {
     String userToken = login(email, oldPassword);
 
     ChangePasswordRequest changeReq = new ChangePasswordRequest(oldPassword, newPassword);
-    webTestClient.post()
+    webTestClient.patch()
       .uri("/api/auth/change-password")
       .header("Authorization", "Bearer " + userToken)
       .contentType(MediaType.APPLICATION_JSON)

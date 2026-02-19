@@ -9,7 +9,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,7 @@ import com.marckux.stockman.auth.application.dtos.LoginResponse;
 import com.marckux.stockman.auth.application.dtos.RegisterRequest;
 import com.marckux.stockman.auth.application.dtos.UserResponse;
 import com.marckux.stockman.auth.application.ports.in.usecases.ChangePasswordUseCase;
+import com.marckux.stockman.auth.application.ports.in.usecases.DeleteUserByIdUseCase;
 import com.marckux.stockman.auth.application.ports.in.usecases.FindAllUsersUseCase;
 import com.marckux.stockman.auth.application.ports.in.usecases.FindUserByIdUsecase;
 import com.marckux.stockman.auth.application.ports.in.usecases.LoginUseCase;
@@ -41,6 +44,7 @@ public class AuthController {
   private final LoginUseCase login;
   private final RegisterUseCase register;
   private final ChangePasswordUseCase changePassword;
+  private final DeleteUserByIdUseCase deleteUserById;
   private final FindAllUsersUseCase findAllUsers;
   private final FindUserByIdUsecase findUserById;
 
@@ -74,7 +78,14 @@ public class AuthController {
     return ResponseEntity.ok(findUserById.execute(UUID.fromString(id)));
   }
 
-  @PostMapping("/change-password")
+  @DeleteMapping("/users/{id}")
+  @PreAuthorize("hasRole('SUPER_ADMIN')")
+  public ResponseEntity<Void> deleteById(@PathVariable("id") String id) {
+    deleteUserById.execute(UUID.fromString(id));
+    return ResponseEntity.noContent().build();
+  }
+
+  @PatchMapping("/change-password")
   public ResponseEntity<Void> changePassword(
       @AuthenticationPrincipal UserDetails user,
       @RequestBody @Valid ChangePasswordRequest request) {

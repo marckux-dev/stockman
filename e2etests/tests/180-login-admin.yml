@@ -3,6 +3,3 @@ endpoint: /api/auth/login
 body:
   email: "super_admin@example.mail"
   password: "super"
-store:
-  field: user.id
-  variable: admin_id

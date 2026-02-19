@@ -4,3 +4,5 @@ body:
   email: "e2e_user@example.mail"
   password: "NewPass1"
   name: "E2E User"
+store:
+  user_id: id

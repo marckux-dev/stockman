@@ -49,6 +49,11 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
       .findById(id)
       .map(this::toDomain);  
   }
+
+  @Override
+  public void deleteById(UUID id) {
+    jpaUserRepository.deleteById(id);
+  }
   
   public JpaUserRepository getJpaUserRepository() {
     return jpaUserRepository;
