@@ -1,0 +1,5 @@
+method: POST
+endpoint: /api/auth/login
+body:
+  email: "e2e_user@example.mail"
+  password: "NewPass1"

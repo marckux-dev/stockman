@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.marckux.stockman.auth.application.dtos.ChangePasswordCommand;
+import com.marckux.stockman.auth.application.dtos.ChangePasswordRequest;
 import com.marckux.stockman.auth.application.dtos.LoginRequest;
 import com.marckux.stockman.auth.application.dtos.LoginResponse;
 import com.marckux.stockman.auth.application.dtos.RegisterRequest;
 import com.marckux.stockman.auth.application.dtos.UserResponse;
+import com.marckux.stockman.auth.application.ports.in.usecases.ChangePasswordUseCase;
 import com.marckux.stockman.auth.application.ports.in.usecases.FindAllUsersUseCase;
 import com.marckux.stockman.auth.application.ports.in.usecases.FindUserByIdUsecase;
 import com.marckux.stockman.auth.application.ports.in.usecases.LoginUseCase;
@@ -35,6 +40,7 @@ public class AuthController {
 
   private final LoginUseCase login;
   private final RegisterUseCase register;
+  private final ChangePasswordUseCase changePassword;
   private final FindAllUsersUseCase findAllUsers;
   private final FindUserByIdUsecase findUserById;
 
@@ -68,5 +74,18 @@ public class AuthController {
     return ResponseEntity.ok(findUserById.execute(UUID.fromString(id)));
   }
 
+  @PostMapping("/change-password")
+  public ResponseEntity<Void> changePassword(
+      @AuthenticationPrincipal UserDetails user,
+      @RequestBody @Valid ChangePasswordRequest request) {
+    ChangePasswordCommand command = new ChangePasswordCommand(
+      user.getUsername(),
+      request.currentPassword(),
+      request.newPassword()
+    );
+    changePassword.execute(command);
+    return ResponseEntity.noContent().build();
+  }
+  
   
 }

@@ -45,6 +45,15 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 
 La respuesta incluye `token`. Usarlo como Bearer para rutas privadas.
 
+### Cambiar password (solo usuario activo)
+```bash
+TOKEN="pega_el_token_aqui"
+curl -s -X POST http://localhost:8080/api/auth/change-password \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"currentPassword":"super","newPassword":"StrongPass1!"}'
+```
+
 ### Salud privada (requiere token)
 ```bash
 TOKEN="pega_el_token_aqui"
