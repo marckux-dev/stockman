@@ -90,6 +90,28 @@ curl -s http://localhost:8080/api/auth/users/$USER_ID \
 ./mvnw test
 ```
 
+## E2E
+El runner está en `e2etests/api-test.zsh`. Ejecuta archivos `.yml` en orden numérico.
+
+Requisitos: `curl`, `jq`, `yq`.
+
+Uso básico:
+```bash
+./e2etests/api-test.zsh e2etests/tests/*.yml
+```
+
+Variables y sesión:
+- El token Bearer se guarda automáticamente si la respuesta trae `token` o `accessToken`.
+- `logout: true` limpia el token actual.
+- `store` permite guardar campos del JSON para usar en tests posteriores.
+- Puedes referenciar variables con `{{var}}` en `endpoint` y `body`.
+
+Ejemplo de `store`:
+```yml
+store:
+  user_id: id
+```
+
 ## Notas
 En desarrollo se usa `spring.jpa.hibernate.ddl-auto=update`. En producción conviene `validate`.
 

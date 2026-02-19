@@ -1,0 +1,2 @@
+method: GET
+endpoint: /api/auth/users/{{user2_id}}
