@@ -3,4 +3,3 @@ endpoint: /api/auth/login
 expected: 400
 body:
   email: "super_admin@example.mail"
-

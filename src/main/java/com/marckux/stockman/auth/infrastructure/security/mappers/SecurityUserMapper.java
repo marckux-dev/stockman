@@ -11,13 +11,16 @@ import org.springframework.stereotype.Component;
 public class SecurityUserMapper {
 
   public UserDetails toUserDetails(com.marckux.stockman.auth.domain.model.User user) {
+    String password = user.getHashedPassword() != null
+      ? user.getHashedPassword().getValue()
+      : "{noop}__NO_PASSWORD__";
     return User.builder()
       .username(user.getEmail().getValue())
-      .password(user.getHashedPassword().getValue())
+      .password(password)
       .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole())))
-      .disabled(!user.getIsActive())
+      .disabled(!user.isActive())
       .accountExpired(false)
-      .accountLocked(false)
+      .accountLocked(user.isBlocked())
       .credentialsExpired(false)
       .build()
     ;

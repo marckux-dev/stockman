@@ -6,15 +6,21 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.marckux.stockman.auth.domain.exceptions.DomainException;
 import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.auth.domain.exceptions.InvalidTokenException;
 import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.notification.domain.exceptions.MailDeliveryException;
 import com.marckux.stockman.shared.infrastructure.rest.dto.ErrorResponse;
 
+/**
+ * Maneja excepciones globales y devuelve respuestas de error homogéneas.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -31,6 +37,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
     return buildResponse(HttpStatus.UNAUTHORIZED, "Credenciales no válidas");
+  }
+
+  @ExceptionHandler(LockedException.class)
+  public ResponseEntity<ErrorResponse> handleLockedException(LockedException ex) {
+    return buildResponse(HttpStatus.FORBIDDEN, "Usuario bloqueado");
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -52,15 +63,28 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
-public ResponseEntity<ErrorResponse> handleExpiredJwtException(io.jsonwebtoken.ExpiredJwtException ex) {
+  public ResponseEntity<ErrorResponse> handleExpiredJwtException(io.jsonwebtoken.ExpiredJwtException ex) {
     return buildResponse(HttpStatus.UNAUTHORIZED, "El token ha expirado. Por favor, inicie sesión de nuevo.");
-}
+  }
 
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleResourceNotFoundException (ResourceNotFoundException ex) {
     return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
   }
 
+  @ExceptionHandler(InvalidTokenException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+  }
+
+  @ExceptionHandler(MailDeliveryException.class)
+  public ResponseEntity<ErrorResponse> handleMailDeliveryException(MailDeliveryException ex) {
+    return buildResponse(HttpStatus.BAD_GATEWAY, ex.getMessage());
+  }
+
+  /**
+   * Construye la respuesta de error con status y mensaje.
+   */
   private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
     var errorResponse = new ErrorResponse(status.value(), message, System.currentTimeMillis());
     return new ResponseEntity<ErrorResponse>(errorResponse, status);

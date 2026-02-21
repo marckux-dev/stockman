@@ -16,19 +16,18 @@ class UserTest extends BaseTest {
     private final HashedPassword password = new HashedPassword("$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQiy38a");
 
     @Test
-    @DisplayName("Debería asignar Role.USER y isActive=true por defecto si no se especifican")
+    @DisplayName("Debería asignar Role.USER e INACTIVE por defecto")
     void shouldAssignDefaults() {
-        // WHEN: Creamos usuario sin rol ni active
+        // WHEN: Creamos usuario sin rol ni estado
         User user = User.builder()
                 .email(email)
                 .hashedPassword(password)
-                .name("Pepe")
                 .build();
 
         // THEN
         assertNotNull(user.getRole(), "El rol no debería ser nulo");
         assertEquals(Role.USER, user.getRole(), "El rol por defecto debe ser USER");
-        assertTrue(user.getIsActive(), "El usuario debería nacer activo");
+        assertEquals(ActivationStatus.INACTIVE, user.getActivationStatus(), "El usuario debería nacer inactivo");
     }
 
     @Test
@@ -37,11 +36,6 @@ class UserTest extends BaseTest {
         // Sin Email
         assertThrows(InvalidAttributeException.class, () -> User.builder()
                 .hashedPassword(password)
-                .build());
-
-        // Sin Password
-        assertThrows(InvalidAttributeException.class, () -> User.builder()
-                .email(email)
                 .build());
     }
 }

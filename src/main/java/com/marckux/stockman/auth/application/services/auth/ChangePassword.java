@@ -1,6 +1,7 @@
 package com.marckux.stockman.auth.application.services.auth;
 
-import org.springframework.security.authentication.BadCredentialsException;
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,9 +9,9 @@ import com.marckux.stockman.auth.application.dtos.ChangePasswordCommand;
 import com.marckux.stockman.auth.application.ports.in.usecases.ChangePasswordUseCase;
 import com.marckux.stockman.auth.application.ports.out.PasswordHasherPort;
 import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.auth.domain.exceptions.InvalidTokenException;
 import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.auth.domain.model.User;
-import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 
@@ -26,24 +27,18 @@ public class ChangePassword implements ChangePasswordUseCase {
   @Override
   @Transactional
   public Void execute(ChangePasswordCommand command) {
-    String email = Email.of(command.email()).getValue();
-    User user = userRepository.findByEmail(email)
-      .orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
-
-    if (!user.getIsActive()) {
-      throw new InvalidAttributeException("Usuario inactivo");
+    String token = command.token();
+    User user = userRepository.findByToken(token)
+      .orElseThrow(() -> new ResourceNotFoundException("Token", token));
+    if (user.isBlocked()) {
+      throw new InvalidAttributeException("Usuario bloqueado");
     }
-
-    boolean validCurrentPassword = passwordHasher.matches(
-      command.currentPassword(),
-      user.getHashedPassword().getValue()
-    );
-    if (!validCurrentPassword) {
-      throw new BadCredentialsException("Credenciales no válidas");
+    if (!user.hasValidToken(token, Instant.now())) {
+      throw new InvalidTokenException("Token inválido o expirado");
     }
 
     HashedPassword hashedPassword = HashedPassword.of(passwordHasher.encode(command.newPassword()));
-    User updatedUser = user.toBuilder().hashedPassword(hashedPassword).build();
+    User updatedUser = user.assignPasswordAndActivate(hashedPassword);
     userRepository.save(updatedUser);
     return null;
   }

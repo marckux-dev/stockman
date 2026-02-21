@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
@@ -27,7 +28,7 @@ public class SecurityUserMapperTest extends BaseTest {
         .email(Email.of("text@example.mail"))
         .hashedPassword(HashedPassword.of(VALID_HASH))
         .role(Role.USER)
-        .isActive(true)
+        .activationStatus(ActivationStatus.ACTIVE)
         .build();
     // WHEN
     UserDetails userDetails = mapper.toUserDetails(user);
@@ -38,6 +39,20 @@ public class SecurityUserMapperTest extends BaseTest {
     assertTrue(userDetails.getAuthorities().stream().anyMatch(
         a -> a.getAuthority().equals("ROLE_USER")));
 
+  }
+
+  @Test
+  void shouldMapBlockedUserAsLocked() {
+    User user = User.builder()
+      .id(UUID.randomUUID())
+      .email(Email.of("blocked@example.mail"))
+      .hashedPassword(HashedPassword.of(VALID_HASH))
+      .role(Role.USER)
+      .activationStatus(ActivationStatus.BLOCKED)
+      .build();
+
+    UserDetails userDetails = mapper.toUserDetails(user);
+    assertTrue(userDetails.isAccountNonLocked() == false);
   }
 
 }

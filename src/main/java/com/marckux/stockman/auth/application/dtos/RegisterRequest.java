@@ -1,6 +1,5 @@
 package com.marckux.stockman.auth.application.dtos;
 
-import com.marckux.stockman.auth.application.validation.StrongPassword;
 import com.marckux.stockman.auth.application.validation.UniqueEmail;
 import com.marckux.stockman.shared.domain.constants.ValidationConstants;
 
@@ -15,13 +14,7 @@ public record RegisterRequest(
       message = "El formato del email no es válido"
     )
     @UniqueEmail
-    String email,
-
-    @NotBlank(message = "La password es obligatoria")
-    @StrongPassword
-    String password,
-
-    String name
+    String email
 ) {
   public RegisterRequest {
     if (email != null)

@@ -1,1 +1,5 @@
-logout: true
+method: POST
+endpoint: /api/auth/request-password-reset
+expected: 204
+body:
+  email: "ghost_user@example.mail"

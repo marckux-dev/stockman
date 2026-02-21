@@ -1,7 +1,5 @@
 method: POST
 endpoint: /api/auth/register
-expected: 400
+expected: 403
 body:
   email: "e2e_user@example.mail"
-  password: "StrongPass1!"
-  name: "Duplicated User"

@@ -15,12 +15,20 @@ docker compose up -d
 ```
 
 ### Configuración
-Verificar credenciales y URL en `src/main/resources/application.properties`.
+Configurar variables de entorno sensibles antes de ejecutar.
 
 Valores por defecto:
 - `jdbc:postgresql://localhost:5432/stockman_db`
 - usuario: `marckux`
 - password: `secret`
+
+Variables recomendadas:
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `MAIL_USERNAME` (cuenta Gmail remitente)
+- `MAIL_PASSWORD` (App Password de Gmail, no password normal)
+- `MAIL_FROM` (opcional, por defecto usa `MAIL_USERNAME`)
 
 ## Ejecución
 Con Maven Wrapper:
@@ -30,6 +38,14 @@ Con Maven Wrapper:
 
 ## Endpoints
 Base URL local: `http://localhost:8080`
+
+## Swagger / OpenAPI
+UI: `http://localhost:8080/swagger-ui.html` (redirige a `/swagger-ui/index.html`)
+
+OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+Para rutas protegidas, usa el botón **Authorize** e ingresa:
+`Bearer <token>`.
 
 ### Endpoint de ejemplo de acceso público
 ```bash
@@ -58,16 +74,46 @@ TOKEN="pega_el_token_aqui"
 curl -s -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{"email":"user@example.com","password":"StrongPass1!","name":"User"}'
+  -d '{"email":"user@example.com"}'
 ```
 
-### Cambiar password (solo usuario activo)
+El registro crea al usuario **inactivo**, genera un token de un solo uso y envía un email con enlace de configuración de contraseña.
+
+Los enlaces de email apuntan a:
+- `/configure-password?token=...`
+- `/reset-password?token=...`
+
+Ambas rutas sirven un formulario web para establecer la nueva password.
+
+### Promover roles
+`ADMIN` o `SUPER_ADMIN` pueden promover `USER` a `ADMIN`:
 ```bash
 TOKEN="pega_el_token_aqui"
+USER_ID="uuid_del_usuario"
+curl -s -X PATCH http://localhost:8080/api/auth/users/$USER_ID/promote-admin \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Sólo `SUPER_ADMIN` puede promover `USER` a `SUPER_ADMIN`:
+```bash
+TOKEN="pega_el_token_aqui"
+USER_ID="uuid_del_usuario"
+curl -s -X PATCH http://localhost:8080/api/auth/users/$USER_ID/promote-super-admin \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Configurar o resetear password con token
+```bash
 curl -s -X PATCH http://localhost:8080/api/auth/change-password \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"currentPassword":"StrongPass1!","newPassword":"StrongPass2!"}'
+  -d '{"token":"TOKEN_RECIBIDO_POR_EMAIL","newPassword":"StrongPass2!"}'
+```
+
+### Solicitar reseteo de password
+```bash
+curl -s -X POST http://localhost:8080/api/auth/request-password-reset \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com"}'
 ```
 
 ### Listar usuarios (solo ADMIN o SUPER_ADMIN)
@@ -83,6 +129,20 @@ TOKEN="pega_el_token_aqui"
 USER_ID="uuid_del_usuario"
 curl -s http://localhost:8080/api/auth/users/$USER_ID \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### Enviar email enriquecido (solo ADMIN o SUPER_ADMIN)
+```bash
+TOKEN="pega_el_token_aqui"
+curl -s -X POST http://localhost:8080/api/notifications/emails/rich \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "to":"user@example.com",
+    "userName":"User",
+    "subject":"Bienvenido a Stockman",
+    "message":"Tu cuenta fue creada correctamente.\nYa puedes iniciar sesión."
+  }'
 ```
 
 ## Tests

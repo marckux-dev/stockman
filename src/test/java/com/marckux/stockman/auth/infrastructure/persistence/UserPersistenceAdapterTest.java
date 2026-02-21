@@ -1,6 +1,7 @@
 package com.marckux.stockman.auth.infrastructure.persistence;
 
 import com.marckux.stockman.auth.domain.model.Role;
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
@@ -41,8 +42,7 @@ class UserPersistenceAdapterTest extends BaseTest {
         .email("test@test.com")
         .password(VALID_HASH)
         .role("ADMIN")
-        .isActive(true)
-        .name("Test")
+        .activationStatus(ActivationStatus.ACTIVE)
         .build();
 
     when(jpaUserRepository.findByEmail("test@test.com")).thenReturn(Optional.of(entity));
@@ -68,8 +68,7 @@ class UserPersistenceAdapterTest extends BaseTest {
         .email(Email.of("test@test.com"))
         .hashedPassword(HashedPassword.of(VALID_HASH))
         .role(Role.USER)
-        .name("Test")
-        .isActive(true)
+        .activationStatus(ActivationStatus.ACTIVE)
         .build();
 
     // Simulamos que al guardar devuelve la misma entidad (con ID generado)

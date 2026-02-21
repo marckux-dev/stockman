@@ -10,6 +10,7 @@ public interface UserRepositoryPort {
   
   User save(User user);
   Optional<User> findByEmail(String email);
+  Optional<User> findByToken(String token);
   List<User> findAll();
   Optional<User> findById(UUID id);
   void deleteById(UUID id);

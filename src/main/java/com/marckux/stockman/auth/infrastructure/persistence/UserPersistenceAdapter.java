@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
@@ -35,6 +36,13 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   }
 
   @Override
+  public Optional<User> findByToken(String token) {
+    return jpaUserRepository
+      .findByToken(token)
+      .map(this::toDomain);
+  }
+
+  @Override
   public List<User> findAll() {
     return jpaUserRepository
         .findAll()
@@ -60,12 +68,19 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   }
 
   private User toDomain(UserEntity userEntity) {
+    HashedPassword hashedPassword = null;
+    if (userEntity.getPassword() != null && !userEntity.getPassword().isBlank()) {
+      hashedPassword = HashedPassword.of(userEntity.getPassword());
+    }
     return User.builder()
         .id(userEntity.getId())
         .email(Email.of(userEntity.getEmail()))
-        .hashedPassword(HashedPassword.of(userEntity.getPassword()))
-        .name(userEntity.getName())
-        .isActive(userEntity.isActive())
+        .hashedPassword(hashedPassword)
+        .activationStatus(userEntity.getActivationStatus() != null
+          ? userEntity.getActivationStatus()
+          : ActivationStatus.INACTIVE)
+        .token(userEntity.getToken())
+        .tokenExpiration(userEntity.getTokenExpiration())
         .role(Role.valueOf(userEntity.getRole()))
         .build();
   }
@@ -74,9 +89,10 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     return UserEntity.builder()
         .id(user.getId())
         .email(user.getEmail().getValue())
-        .password(user.getHashedPassword().getValue())
-        .name(user.getName())
-        .isActive(user.getIsActive())
+        .password(user.getHashedPassword() != null ? user.getHashedPassword().getValue() : null)
+        .activationStatus(user.getActivationStatus())
+        .token(user.getToken())
+        .tokenExpiration(user.getTokenExpiration())
         .role(user.getRole().name())
         .build();
 

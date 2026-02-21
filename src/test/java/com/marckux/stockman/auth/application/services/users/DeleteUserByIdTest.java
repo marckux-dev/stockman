@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
@@ -44,7 +45,7 @@ public class DeleteUserByIdTest extends BaseTest {
       .email(Email.of("user@example.mail"))
       .hashedPassword(HashedPassword.of(HASHED))
       .role(Role.USER)
-      .isActive(true)
+      .activationStatus(ActivationStatus.ACTIVE)
       .build();
 
     when(userRepository.findById(id)).thenReturn(Optional.of(user));
@@ -63,7 +64,7 @@ public class DeleteUserByIdTest extends BaseTest {
       .email(Email.of("super_admin@example.mail"))
       .hashedPassword(HashedPassword.of(HASHED))
       .role(Role.SUPER_ADMIN)
-      .isActive(true)
+      .activationStatus(ActivationStatus.ACTIVE)
       .build();
 
     when(userRepository.findById(id)).thenReturn(Optional.of(user));

@@ -1,8 +1,6 @@
 method: POST
 endpoint: /api/auth/register
 body:
-  email: "e2e_user2@example.mail"
-  password: "SecondPass1"
-  name: "E2E User 2"
+  email: "marcossalinasizquierdo@gmail.com"
 store:
   user2_id: id

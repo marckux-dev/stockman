@@ -5,9 +5,8 @@ import com.marckux.stockman.auth.application.validation.StrongPassword;
 import jakarta.validation.constraints.NotBlank;
 
 public record ChangePasswordRequest(
-
-    @NotBlank(message = "La password actual es obligatoria")
-    String currentPassword,
+    @NotBlank(message = "El token es obligatorio")
+    String token,
 
     @NotBlank(message = "La nueva password es obligatoria")
     @StrongPassword

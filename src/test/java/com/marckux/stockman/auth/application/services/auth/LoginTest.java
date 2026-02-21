@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.marckux.stockman.auth.application.dtos.LoginRequest;
 import com.marckux.stockman.auth.application.dtos.LoginResponse;
 import com.marckux.stockman.auth.application.ports.out.IdentityManagerPort;
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
@@ -53,7 +54,7 @@ public class LoginTest extends BaseTest {
         .email(Email.of(email))
         .hashedPassword(HashedPassword.of(hashedPassword))
         .role(Role.ADMIN)
-        .isActive(true)
+        .activationStatus(ActivationStatus.ACTIVE)
         .build();
 
     doNothing().when(identityManager).authenticate(anyString(), anyString());

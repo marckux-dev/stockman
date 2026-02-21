@@ -1,5 +1,3 @@
-method: POST
-endpoint: /api/auth/login
-body:
-  email: "super_admin@example.mail"
-  password: "super"
+method: GET
+endpoint: /api/auth/users
+expected: 403

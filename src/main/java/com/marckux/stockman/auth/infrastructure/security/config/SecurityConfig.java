@@ -19,6 +19,9 @@ import com.marckux.stockman.auth.infrastructure.security.filters.JwtAuthenticati
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Configuración de seguridad HTTP, autenticación y autorización.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -28,11 +31,11 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   /**
-   * Crea una cadena de filtros secuenciales
-   * 
-   * @param http
-   * @return
-   * @throws Exception
+   * Define la cadena principal de filtros de seguridad.
+   *
+   * @param http builder de seguridad HTTP.
+   * @return cadena de filtros configurada.
+   * @throws Exception si falla la configuración.
    */
   @Bean
   public SecurityFilterChain securityFilterChain(
@@ -45,8 +48,14 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // Acceso a rutas
         .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/", "/configure-password", "/reset-password").permitAll()
+            .requestMatchers("/configure-password.html", "/reset-password.html").permitAll()
+            .requestMatchers("/favicon.ico").permitAll()
             .requestMatchers("/api/public/**").permitAll()
+            .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/api/auth/login").permitAll()
+            .requestMatchers("/api/auth/change-password").permitAll()
+            .requestMatchers("/api/auth/request-password-reset").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(
             jwtAuthenticationFilter,

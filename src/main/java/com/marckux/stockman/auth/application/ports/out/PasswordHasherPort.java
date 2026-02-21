@@ -4,4 +4,5 @@ public interface PasswordHasherPort {
 
   public String encode(String password);
   public boolean matches(String rawPassword, String hashedPassword);
+  public boolean isHashed(String password);
 }

@@ -11,6 +11,7 @@ public interface JpaUserRepository extends JpaRepository<UserEntity, UUID>{
   public List<UserEntity> findAll();
   
   public Optional<UserEntity> findByEmail(String email);
+  public Optional<UserEntity> findByToken(String token);
 
   public Optional<UserEntity> findById(UUID id);
   

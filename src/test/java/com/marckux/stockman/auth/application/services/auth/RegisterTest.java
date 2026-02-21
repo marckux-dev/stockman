@@ -1,12 +1,12 @@
 package com.marckux.stockman.auth.application.services.auth;
 
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -15,58 +15,65 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.marckux.stockman.auth.application.dtos.RegisterRequest;
 import com.marckux.stockman.auth.application.dtos.UserResponse;
-import com.marckux.stockman.auth.application.ports.out.PasswordHasherPort;
+import com.marckux.stockman.auth.application.ports.out.SecureTokenGeneratorPort;
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
-import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
+import com.marckux.stockman.auth.domain.ports.out.AccountNotificationPort;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 import com.marckux.stockman.shared.BaseTest;
 
 @ExtendWith(MockitoExtension.class)
 public class RegisterTest extends BaseTest {
 
-  private static String HASHED = "$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQiy38a";
-
   @Mock
   private UserRepositoryPort userRepository;
 
   @Mock
-  private PasswordHasherPort passwordHasher;
+  private SecureTokenGeneratorPort secureTokenGenerator;
+
+  @Mock
+  private AccountNotificationPort accountNotificationPort;
 
   @InjectMocks
   private Register register;
 
   @Test
   void shouldRegisterANewUserSuccessfully() {
-    // GIVEN
     String email = "new-user@example.mail";
-    String password = "Abcd1234";
-    String name = "New User";
-    User user = User.builder()
+    String token = "secure-token";
+    User savedUser = User.builder()
       .id(UUID.randomUUID())
       .email(Email.of(email))
-      .hashedPassword(HashedPassword.of(HASHED))
-      .name(name)
       .role(Role.USER)
+      .activationStatus(ActivationStatus.INACTIVE)
+      .token(token)
+      .tokenExpiration(Instant.now().plusSeconds(1800))
       .build();
-    RegisterRequest request = new RegisterRequest(email, password, name);
-    when(passwordHasher.encode(password)).thenReturn(HASHED);
-    when(userRepository.save(any(User.class))).thenReturn(user);
+
+    ReflectionTestUtils.setField(register, "tokenExpirationMinutes", 30);
+    when(secureTokenGenerator.generate()).thenReturn(token);
+    when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+    UserResponse userResponse = register.execute(new RegisterRequest(email));
+
     ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    // WHEN
-    UserResponse userResponse = register.execute(request);
-    // THEN
     verify(userRepository).save(userCaptor.capture());
+    verify(accountNotificationPort).sendActivationToken(savedUser, token);
     User userSent = userCaptor.getValue();
-    assertNotEquals(password, userSent.getHashedPassword().getValue());
-    assertEquals(HASHED, userSent.getHashedPassword().getValue());
+
+    assertEquals(Role.USER, userSent.getRole());
+    assertEquals(ActivationStatus.INACTIVE, userSent.getActivationStatus());
+    assertEquals(token, userSent.getToken());
+    assertNotNull(userSent.getTokenExpiration());
     assertNotNull(userResponse);
     assertEquals(email, userResponse.email());
-    assertEquals(name, userResponse.name());
     assertEquals(Role.USER.name(), userResponse.role());
+    assertEquals(ActivationStatus.INACTIVE.name(), userResponse.activationStatus());
   }
 }

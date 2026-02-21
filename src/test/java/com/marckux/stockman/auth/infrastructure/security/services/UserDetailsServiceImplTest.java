@@ -50,7 +50,6 @@ class UserDetailsServiceImplTest extends BaseTest {
         .email(Email.of(email))
         .hashedPassword(HashedPassword.of(HASHED))
         .role(Role.USER)
-        .name("Pro")
         .build();
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
         .username(email)

@@ -1,6 +1,7 @@
 package com.marckux.stockman.auth.infrastructure.persistence;
 
 import com.marckux.stockman.auth.domain.model.Role;
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
@@ -44,9 +45,8 @@ class UserPersistenceAdapterIntegrationTest {
         .id(null)
         .email(Email.of("adapter_test@stockman.com"))
         .hashedPassword(HashedPassword.of(HASHED))
-        .name("Adapter Tester")
         .role(Role.ADMIN)
-        .isActive(true)
+        .activationStatus(ActivationStatus.ACTIVE)
         .build();
 
     // WHEN: El adaptador lo guarda
@@ -73,7 +73,6 @@ class UserPersistenceAdapterIntegrationTest {
         .id(null)
         .email(Email.of("unique@stockman.com"))
         .hashedPassword(HashedPassword.of(HASHED))
-        .name("User One")
         .build();
     adapter.save(user1);
     entityManager.flush();
@@ -85,7 +84,6 @@ class UserPersistenceAdapterIntegrationTest {
         .id(null)
         .email(Email.of("unique@stockman.com")) // Duplicado
         .hashedPassword(HashedPassword.of(HASHED))
-        .name("User Two")
         .build();
 
     // THEN: Esperamos que la base de datos (H2 en este caso) grite.
@@ -106,9 +104,8 @@ class UserPersistenceAdapterIntegrationTest {
     UserEntity entity = UserEntity.builder()
         .email("found@stockman.com")
         .password(HASHED)
-        .name("Found Me")
         .role("USER")
-        .isActive(false) // Probamos un flag false
+        .activationStatus(ActivationStatus.INACTIVE) // Probamos un flag false
         .build();
     jpaRepository.save(entity);
 
@@ -118,7 +115,7 @@ class UserPersistenceAdapterIntegrationTest {
     // THEN: Debe reconstruir el objeto de dominio perfectamente
     assertThat(result).isPresent();
     User user = result.get();
-    assertThat(user.getIsActive()).isFalse(); // Verificamos que el booleano se mapeó bien
+    assertThat(user.isActive()).isFalse(); // Verificamos que el booleano se mapeó bien
     assertThat(user.getRole()).isEqualTo(Role.USER); // Verificamos el Enum
     assertThat(user.getEmail().getValue()).isEqualTo("found@stockman.com"); // Verificamos el Value Object
   }

@@ -1,19 +1,19 @@
 package com.marckux.stockman.auth.infrastructure.persistence;
 
-import java.util.Collection;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.marckux.stockman.auth.domain.model.ActivationStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,16 +36,21 @@ public class UserEntity {
   @Column(nullable = false, unique = true)
   private String email;
 
-  private String name;
-
-  @Column(nullable = false)
+  @Column(nullable = true)
   private String password;
 
   @Column(nullable = false)
   private String role;
 
-  @Column(name = "is_active")
+  @Enumerated(EnumType.STRING)
+  @Column(name = "activation_status", nullable = false)
   @Builder.Default
-  private boolean isActive = true;
+  private ActivationStatus activationStatus = ActivationStatus.INACTIVE;
+
+  @Column(name = "token")
+  private String token;
+
+  @Column(name = "token_expiration")
+  private Instant tokenExpiration;
 
 }
