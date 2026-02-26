@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;

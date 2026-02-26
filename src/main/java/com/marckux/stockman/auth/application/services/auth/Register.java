@@ -16,6 +16,7 @@ import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.ports.out.AccountNotificationPort;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,9 @@ public class Register implements RegisterUseCase {
   @Transactional
   public UserResponse execute(RegisterRequest request) {
     Email email = Email.of(request.email());
+    if (userRepository.findByEmail(email.getValue()).isPresent()) {
+      throw new InvalidAttributeException("El email ya está registrado");
+    }
     String token = secureTokenGenerator.generate();
     Instant expiration = Instant.now().plus(tokenExpirationMinutes, ChronoUnit.MINUTES);
 

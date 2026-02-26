@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import com.marckux.stockman.auth.application.dtos.ChangePasswordRequest;
+import com.marckux.stockman.auth.application.dtos.ChangePasswordWithTokenRequest;
 import com.marckux.stockman.auth.application.dtos.LoginRequest;
 import com.marckux.stockman.auth.application.dtos.LoginResponse;
 import com.marckux.stockman.auth.application.dtos.RegisterRequest;
@@ -43,8 +43,8 @@ public class DeleteUserIntegrationTest extends IntegrationBaseTest {
   }
 
   @Test
-  @DisplayName("Integración: ADMIN no puede eliminar usuarios")
-  void shouldForbidDeleteWhenUserRoleIsNotSuperAdmin() {
+  @DisplayName("Integración: ADMIN puede eliminar USER pero no ADMIN")
+  void shouldAllowAdminToDeleteUserButNotAdmin() {
     String superAdminToken = login("super_admin@example.mail", "super");
 
     UserResponse adminCandidate = registerUser(superAdminToken, "admin_candidate_");
@@ -52,9 +52,9 @@ public class DeleteUserIntegrationTest extends IntegrationBaseTest {
     String activationToken = jpaUserRepository.findByEmail(adminEmail).orElseThrow().getToken();
 
     webTestClient.patch()
-      .uri("/api/auth/change-password")
+      .uri("/api/auth/change-password-with-token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(new ChangePasswordRequest(activationToken, "AdminPass1"))
+      .bodyValue(new ChangePasswordWithTokenRequest(activationToken, "AdminPass1"))
       .exchange()
       .expectStatus().isNoContent();
 
@@ -65,13 +65,38 @@ public class DeleteUserIntegrationTest extends IntegrationBaseTest {
       .expectStatus().isOk();
 
     String adminToken = login(adminEmail, "AdminPass1");
-    UserResponse victim = registerUser(superAdminToken, "victim_");
+    UserResponse victim = registerUser(superAdminToken, "victim_user_");
 
     webTestClient.delete()
       .uri("/api/auth/users/" + victim.id())
       .header("Authorization", "Bearer " + adminToken)
       .exchange()
-      .expectStatus().isForbidden();
+      .expectStatus().isNoContent();
+
+    UserResponse otherAdmin = registerUser(superAdminToken, "other_admin_");
+    String otherAdminEmail = otherAdmin.email();
+    String otherAdminToken = jpaUserRepository.findByEmail(otherAdminEmail).orElseThrow().getToken();
+
+    webTestClient.patch()
+      .uri("/api/auth/change-password-with-token")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(new ChangePasswordWithTokenRequest(otherAdminToken, "AdminPass2"))
+      .exchange()
+      .expectStatus().isNoContent();
+
+    webTestClient.patch()
+      .uri("/api/auth/users/" + otherAdmin.id() + "/promote-admin")
+      .header("Authorization", "Bearer " + superAdminToken)
+      .exchange()
+      .expectStatus().isOk();
+
+    webTestClient.delete()
+      .uri("/api/auth/users/" + otherAdmin.id())
+      .header("Authorization", "Bearer " + adminToken)
+      .exchange()
+      .expectStatus().isBadRequest()
+      .expectBody()
+      .jsonPath("$.message").isEqualTo("Un ADMIN solo puede eliminar usuarios USER");
   }
 
   @Test

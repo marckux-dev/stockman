@@ -1,3 +1,0 @@
-method: PATCH
-endpoint: /api/auth/users/{{user_id}}/promote-admin
-expected: 200

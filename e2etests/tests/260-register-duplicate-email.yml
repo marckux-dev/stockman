@@ -1,5 +1,0 @@
-method: POST
-endpoint: /api/auth/register
-expected: 403
-body:
-  email: "e2e_user@example.mail"

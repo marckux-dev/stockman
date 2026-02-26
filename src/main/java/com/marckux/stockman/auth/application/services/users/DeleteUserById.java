@@ -1,15 +1,14 @@
 package com.marckux.stockman.auth.application.services.users;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.marckux.stockman.auth.application.ports.in.usecases.DeleteUserByIdUseCase;
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
-import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
+import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 
 import lombok.RequiredArgsConstructor;
@@ -22,15 +21,22 @@ public class DeleteUserById implements DeleteUserByIdUseCase {
 
   @Override
   @Transactional
-  public Void execute(UUID id) {
-    User user = userRepository.findById(id)
-      .orElseThrow(() -> new ResourceNotFoundException("Usuario", id.toString()));
+  public Void execute(Input input) {
+    User requester = userRepository.findByEmail(Email.of(input.requesterEmail()).getValue())
+      .orElseThrow(() -> new ResourceNotFoundException("Usuario", input.requesterEmail()));
 
-    if (user.getRole() == Role.SUPER_ADMIN) {
+    User target = userRepository.findById(input.targetUserId())
+      .orElseThrow(() -> new ResourceNotFoundException("Usuario", input.targetUserId().toString()));
+
+    if (target.getRole() == Role.SUPER_ADMIN) {
       throw new InvalidAttributeException("No se puede eliminar un SUPER_ADMIN");
     }
 
-    userRepository.deleteById(id);
+    if (requester.getRole() == Role.ADMIN && target.getRole() != Role.USER) {
+      throw new InvalidAttributeException("Un ADMIN solo puede eliminar usuarios USER");
+    }
+
+    userRepository.deleteById(target.getId());
     return null;
   }
 }

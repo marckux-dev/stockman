@@ -11,10 +11,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.marckux.stockman.auth.domain.exceptions.DomainException;
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.DomainException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.auth.domain.exceptions.InvalidTokenException;
-import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.shared.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.notification.domain.exceptions.MailDeliveryException;
 import com.marckux.stockman.shared.infrastructure.rest.dto.ErrorResponse;
 
@@ -84,6 +84,10 @@ public class GlobalExceptionHandler {
 
   /**
    * Construye la respuesta de error con status y mensaje.
+   *
+   * @param status estado HTTP.
+   * @param message mensaje de error.
+   * @return respuesta con la carga de error.
    */
   private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
     var errorResponse = new ErrorResponse(status.value(), message, System.currentTimeMillis());

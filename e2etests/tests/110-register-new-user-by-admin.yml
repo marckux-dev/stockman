@@ -1,6 +1,0 @@
-method: POST
-endpoint: /api/auth/register
-body:
-  email: "marckux.developer@gmail.com"
-store:
-  user_id: id

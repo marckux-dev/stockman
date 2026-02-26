@@ -54,7 +54,7 @@ public class SecurityConfig {
             .requestMatchers("/api/public/**").permitAll()
             .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/api/auth/login").permitAll()
-            .requestMatchers("/api/auth/change-password").permitAll()
+            .requestMatchers("/api/auth/change-password-with-token").permitAll()
             .requestMatchers("/api/auth/request-password-reset").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(

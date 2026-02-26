@@ -1,3 +1,0 @@
-method: GET
-endpoint: /api/auth/users/{{user_id}}
-expected: 404

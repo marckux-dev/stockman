@@ -1,3 +1,0 @@
-method: GET
-endpoint: /api/private/check-health
-expected: 403

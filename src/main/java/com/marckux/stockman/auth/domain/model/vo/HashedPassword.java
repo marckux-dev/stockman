@@ -2,7 +2,7 @@ package com.marckux.stockman.auth.domain.model.vo;
 
 import java.util.regex.Pattern;
 
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.shared.domain.constants.ValidationConstants;
 
 import lombok.EqualsAndHashCode;

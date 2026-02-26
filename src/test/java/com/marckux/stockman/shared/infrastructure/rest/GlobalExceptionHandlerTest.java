@@ -2,8 +2,6 @@ package com.marckux.stockman.shared.infrastructure.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -13,11 +11,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.core.MethodParameter;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import com.marckux.stockman.auth.domain.exceptions.DomainException;
+import com.marckux.stockman.shared.domain.exceptions.DomainException;
 import com.marckux.stockman.shared.BaseTest;
 import com.marckux.stockman.shared.infrastructure.rest.dto.ErrorResponse;
 
@@ -30,7 +30,7 @@ public class GlobalExceptionHandlerTest extends BaseTest {
   @Test
   void handleInvalidAttributeException_ShouldReturnBadRequest() {
     // GIVEN
-    var ex = mock(DomainException.class);
+    var ex = new DomainException("Error") {};
     // WHEN
     ResponseEntity<ErrorResponse> response = handler.handleInvalidAttributeException(ex);
     // THEN
@@ -40,7 +40,7 @@ public class GlobalExceptionHandlerTest extends BaseTest {
   @Test
   void handleBadCredentialsException_ShouldReturnUnauthorized() {
     // GIVEN
-    var ex = mock(BadCredentialsException.class);
+    var ex = new BadCredentialsException("Credenciales inválidas");
     // WHEN
     ResponseEntity<ErrorResponse> response = handler.handleBadCredentialsException(ex);
     // THEN
@@ -49,14 +49,16 @@ public class GlobalExceptionHandlerTest extends BaseTest {
 
   @Test
   @DisplayName("Debería retornar 400 cuando falla la validación de argumentos")
-  void handleMethodArgumentNotValidException_ShoulReturnBadRequest () {
+  void handleMethodArgumentNotValidException_ShoulReturnBadRequest () throws Exception {
     // GIVEN
     var error1 = new FieldError("object", "field", "Message Error 1");
     var error2 = new FieldError("object2", "field", "Message Error 2");
-    var ex = mock(MethodArgumentNotValidException.class);
-    var bindigResult = mock(BindingResult.class);
-    when(ex.getBindingResult()).thenReturn(bindigResult);
-    when(bindigResult.getFieldErrors()).thenReturn(List.of(error1, error2));
+    BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "object");
+    bindingResult.addError(error1);
+    bindingResult.addError(error2);
+    MethodParameter methodParameter = new MethodParameter(
+        GlobalExceptionHandlerTest.class.getDeclaredMethod("dummyMethod", String.class), 0);
+    var ex = new MethodArgumentNotValidException(methodParameter, bindingResult);
     // WHEN
     var response = handler.handleMethodArgumentNotValidException(ex);
     // THEN
@@ -68,8 +70,7 @@ public class GlobalExceptionHandlerTest extends BaseTest {
   @Test
   void handleDataIntegrityViolationException_ShouldReturnConflict () {
     // GIVEN
-    var ex = mock(DataIntegrityViolationException.class);
-    when(ex.getRootCause()).thenReturn(null);
+    var ex = new DataIntegrityViolationException("Integrity violation");
     // WHEN
     ResponseEntity<ErrorResponse> response = handler.handleDataIntegrityViolationException(ex);
     // THEN
@@ -84,6 +85,10 @@ public class GlobalExceptionHandlerTest extends BaseTest {
     ResponseEntity<ErrorResponse> response = handler.handleExpiredJwtException(ex);
     // THEN
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+  }
+
+  private void dummyMethod(String value) {
+    // Solo para obtener MethodParameter en tests.
   }
   
 }

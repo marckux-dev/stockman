@@ -115,7 +115,8 @@ class UserPersistenceAdapterIntegrationTest {
     // THEN: Debe reconstruir el objeto de dominio perfectamente
     assertThat(result).isPresent();
     User user = result.get();
-    assertThat(user.isActive()).isFalse(); // Verificamos que el booleano se mapeó bien
+    assertThat(user.isActivated()).isFalse(); // Verificamos que el booleano se mapeó bien
+    assertThat(user.isActive()).isTrue(); // Soft delete activo por defecto
     assertThat(user.getRole()).isEqualTo(Role.USER); // Verificamos el Enum
     assertThat(user.getEmail().getValue()).isEqualTo("found@stockman.com"); // Verificamos el Value Object
   }

@@ -1,6 +1,6 @@
 package com.marckux.stockman.auth.domain.model;
 
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
 import com.marckux.stockman.shared.BaseTest;

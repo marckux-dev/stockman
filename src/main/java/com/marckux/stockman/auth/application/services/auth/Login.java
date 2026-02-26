@@ -31,7 +31,7 @@ public class Login implements LoginUseCase {
     final String password = request.password();
     identityManager.authenticate(email, password);
     User user = userRepository.findByEmail(email)
-      .orElseThrow(() -> new RuntimeException("Usuario no encontrad tras autenticación exitosa?"));
+      .orElseThrow(() -> new RuntimeException("Usuario no encontrado tras autenticación exitosa?"));
     String token = tokenProvider.generateToken(user);
     return new LoginResponse(token, UserResponse.fromDomain(user));
   }

@@ -15,8 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
-import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.auth.application.ports.in.usecases.DeleteUserByIdUseCase;
 import com.marckux.stockman.auth.domain.model.ActivationStatus;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
@@ -37,50 +38,108 @@ public class DeleteUserByIdTest extends BaseTest {
   private DeleteUserById deleteUserById;
 
   @Test
-  @DisplayName("Debería eliminar un usuario que no es SUPER_ADMIN")
-  void shouldDeleteNonSuperAdminUser() {
-    UUID id = UUID.randomUUID();
-    User user = User.builder()
-      .id(id)
-      .email(Email.of("user@example.mail"))
-      .hashedPassword(HashedPassword.of(HASHED))
-      .role(Role.USER)
-      .activationStatus(ActivationStatus.ACTIVE)
-      .build();
+  @DisplayName("ADMIN debería eliminar un USER")
+  void shouldAllowAdminToDeleteUser() {
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "admin@example.mail";
+    User requester = buildUser(UUID.randomUUID(), requesterEmail, Role.ADMIN);
+    User target = buildUser(targetId, "user@example.mail", Role.USER);
 
-    when(userRepository.findById(id)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.of(requester));
+    when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
 
-    deleteUserById.execute(id);
+    deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail));
 
-    verify(userRepository).deleteById(id);
+    verify(userRepository).deleteById(targetId);
+  }
+
+  @Test
+  @DisplayName("ADMIN no debería eliminar un ADMIN")
+  void shouldRejectAdminDeletingAdmin() {
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "admin@example.mail";
+    User requester = buildUser(UUID.randomUUID(), requesterEmail, Role.ADMIN);
+    User target = buildUser(targetId, "other-admin@example.mail", Role.ADMIN);
+
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.of(requester));
+    when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
+
+    assertThrows(InvalidAttributeException.class, () ->
+      deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail))
+    );
+    verify(userRepository, never()).deleteById(targetId);
+  }
+
+  @Test
+  @DisplayName("SUPER_ADMIN puede eliminar un ADMIN")
+  void shouldAllowSuperAdminToDeleteAdmin() {
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "super_admin@example.mail";
+    User requester = buildUser(UUID.randomUUID(), requesterEmail, Role.SUPER_ADMIN);
+    User target = buildUser(targetId, "admin@example.mail", Role.ADMIN);
+
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.of(requester));
+    when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
+
+    deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail));
+
+    verify(userRepository).deleteById(targetId);
   }
 
   @Test
   @DisplayName("No debería eliminar un SUPER_ADMIN")
   void shouldRejectWhenUserIsSuperAdmin() {
-    UUID id = UUID.randomUUID();
-    User user = User.builder()
-      .id(id)
-      .email(Email.of("super_admin@example.mail"))
-      .hashedPassword(HashedPassword.of(HASHED))
-      .role(Role.SUPER_ADMIN)
-      .activationStatus(ActivationStatus.ACTIVE)
-      .build();
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "super_admin@example.mail";
+    User requester = buildUser(UUID.randomUUID(), requesterEmail, Role.SUPER_ADMIN);
+    User target = buildUser(targetId, "other-super@example.mail", Role.SUPER_ADMIN);
 
-    when(userRepository.findById(id)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.of(requester));
+    when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
 
-    assertThrows(InvalidAttributeException.class, () -> deleteUserById.execute(id));
-    verify(userRepository, never()).deleteById(id);
+    assertThrows(InvalidAttributeException.class, () ->
+      deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail))
+    );
+    verify(userRepository, never()).deleteById(targetId);
   }
 
   @Test
-  @DisplayName("Debería fallar si el usuario no existe")
-  void shouldFailWhenUserNotFound() {
-    UUID id = UUID.randomUUID();
+  @DisplayName("Debería fallar si el usuario solicitante no existe")
+  void shouldFailWhenRequesterNotFound() {
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "missing@example.mail";
 
-    when(userRepository.findById(id)).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> deleteUserById.execute(id));
-    verify(userRepository, never()).deleteById(id);
+    assertThrows(ResourceNotFoundException.class, () ->
+      deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail))
+    );
+    verify(userRepository, never()).deleteById(targetId);
+  }
+
+  @Test
+  @DisplayName("Debería fallar si el usuario objetivo no existe")
+  void shouldFailWhenTargetNotFound() {
+    UUID targetId = UUID.randomUUID();
+    String requesterEmail = "admin@example.mail";
+    User requester = buildUser(UUID.randomUUID(), requesterEmail, Role.ADMIN);
+
+    when(userRepository.findByEmail(requesterEmail)).thenReturn(Optional.of(requester));
+    when(userRepository.findById(targetId)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () ->
+      deleteUserById.execute(new DeleteUserByIdUseCase.Input(targetId, requesterEmail))
+    );
+    verify(userRepository, never()).deleteById(targetId);
+  }
+
+  private User buildUser(UUID id, String email, Role role) {
+    return User.builder()
+      .id(id)
+      .email(Email.of(email))
+      .hashedPassword(HashedPassword.of(HASHED))
+      .role(role)
+      .activationStatus(ActivationStatus.ACTIVE)
+      .build();
   }
 }

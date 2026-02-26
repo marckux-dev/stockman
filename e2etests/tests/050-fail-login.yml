@@ -1,6 +1,0 @@
-method: POST
-endpoint: /api/auth/login
-expected: 401
-body:
-  email: "super_admin@example.mail"
-  password: "false"

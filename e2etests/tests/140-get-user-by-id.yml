@@ -1,2 +1,0 @@
-method: GET
-endpoint: /api/auth/users/{{admin_id}}

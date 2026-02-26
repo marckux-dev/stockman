@@ -1,7 +1,0 @@
-method: POST
-endpoint: /api/auth/login
-body:
-  email: "super_admin@example.mail"
-  password: "super"
-store:
-  admin_id: user.id

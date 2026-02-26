@@ -104,7 +104,7 @@ curl -s -X PATCH http://localhost:8080/api/auth/users/$USER_ID/promote-super-adm
 
 ### Configurar o resetear password con token
 ```bash
-curl -s -X PATCH http://localhost:8080/api/auth/change-password \
+curl -s -X PATCH http://localhost:8080/api/auth/change-password-with-token \
   -H "Content-Type: application/json" \
   -d '{"token":"TOKEN_RECIBIDO_POR_EMAIL","newPassword":"StrongPass2!"}'
 ```

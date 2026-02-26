@@ -1,30 +1,54 @@
 package com.marckux.stockman.shared.infrastructure;
 
 import com.marckux.stockman.shared.BaseTest;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort; // Para obtener el puerto real
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.time.Duration;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 public abstract class IntegrationBaseTest extends BaseTest {
 
-    // Spring inyecta aquí el puerto aleatorio que eligió al arrancar
-    @LocalServerPort
-    protected int port;
+    @Autowired
+    private WebApplicationContext applicationContext;
 
     protected WebTestClient webTestClient;
 
     @BeforeEach
     void setUpClient() {
-        // Construimos el cliente moderno manualmente apuntando a nuestro servidor local
-        this.webTestClient = WebTestClient.bindToServer()
-                .baseUrl("http://localhost:" + port)
-                .responseTimeout(Duration.ofSeconds(30)) // Buen hábito para evitar timeouts en tests
-                .build();
+        this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(applicationContext)
+            .apply(springSecurity())
+            .configureClient()
+            .responseTimeout(Duration.ofSeconds(30))
+            .build();
+    }
+
+    /**
+     * Crea un WebTestClient con usuario autenticado y CSRF por defecto.
+     *
+     * @param username nombre del usuario autenticado.
+     * @param roles roles asignados al usuario.
+     * @return cliente configurado con autenticación y CSRF.
+     */
+    protected WebTestClient webTestClientWithUser(String username, String... roles) {
+        RequestBuilder defaultRequest = MockMvcRequestBuilders.get("/")
+            .with(user(username).roles(roles))
+            .with(csrf());
+        return MockMvcWebTestClient.bindToApplicationContext(applicationContext)
+            .apply(springSecurity())
+            .defaultRequest(defaultRequest)
+            .configureClient()
+            .responseTimeout(Duration.ofSeconds(30))
+            .build();
     }
 }

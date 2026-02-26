@@ -3,17 +3,17 @@ package com.marckux.stockman.auth.domain.model;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
+import com.marckux.stockman.shared.domain.model.BaseEntity;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class User {
+public class User extends BaseEntity {
 
-  UUID id;
   Email email;
   HashedPassword hashedPassword;
   Role role;
@@ -25,16 +25,21 @@ public class User {
   @Builder(toBuilder = true)
   public User(
       UUID id,
+      Instant createdAt,
+      Instant updatedAt,
+      UUID createdBy,
+      UUID updatedBy,
+      Boolean isActive,
       Email email,
       HashedPassword hashedPassword,
       Role role,
       ActivationStatus activationStatus,
       String token,
       Instant tokenExpiration) {
+    super(id, createdAt, updatedAt, createdBy, updatedBy, isActive != null ? isActive : true);
     if (email == null)
       throw new InvalidAttributeException("El email no puede estar vacío");
 
-    this.id = id;
     this.email = email;
     this.hashedPassword = hashedPassword;
     this.role = (role != null) ? role : Role.USER;
@@ -42,7 +47,7 @@ public class User {
     this.token = token;
     this.tokenExpiration = tokenExpiration;
 
-    if (isActive() && this.hashedPassword == null) {
+    if (isActivated() && this.hashedPassword == null) {
       throw new InvalidAttributeException("Un usuario activo requiere password");
     }
     if ((this.token == null) != (this.tokenExpiration == null)) {
@@ -50,7 +55,7 @@ public class User {
     }
   }
 
-  public boolean isActive() {
+  public boolean isActivated() {
     return this.activationStatus == ActivationStatus.ACTIVE;
   }
 

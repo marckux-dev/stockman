@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.marckux.stockman.auth.application.dtos.UserResponse;
 import com.marckux.stockman.auth.application.ports.in.usecases.FindUserByIdUsecase;
-import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.shared.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
 
 import lombok.RequiredArgsConstructor;

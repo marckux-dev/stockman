@@ -9,9 +9,11 @@ import com.marckux.stockman.notification.application.dtos.SendRichEmailRequest;
 import com.marckux.stockman.notification.application.ports.in.usecases.SendRichEmailUseCase;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationAccountAdapter implements AccountNotificationPort {
 
   @Value("${app.frontend.base-url:http://localhost:8080}")
@@ -32,12 +34,17 @@ public class NotificationAccountAdapter implements AccountNotificationPort {
         Para definir tu contraseña usa este enlace:
         %s
         """.formatted(link);
-    sendRichEmail.execute(new SendRichEmailRequest(
-      user.getEmail().getValue(),
-      "Usuario",
-      "Configura tu contraseña",
-      message
-    ));
+    try {
+      sendRichEmail.execute(new SendRichEmailRequest(
+        user.getEmail().getValue(),
+        "Usuario",
+        "Configura tu contraseña",
+        message
+      ));
+    } catch (RuntimeException ex) {
+      // TODO(PROD): restaurar el error para fallar la operacion si el email es obligatorio.
+      log.warn("No se pudo enviar el email de activacion para el usuario {}", user.getEmail().getValue(), ex);
+    }
   }
 
   @Override
@@ -50,11 +57,16 @@ public class NotificationAccountAdapter implements AccountNotificationPort {
         Para continuar usa este enlace:
         %s
         """.formatted(link);
-    sendRichEmail.execute(new SendRichEmailRequest(
-      user.getEmail().getValue(),
-      "Usuario",
-      "Reseteo de contraseña",
-      message
-    ));
+    try {
+      sendRichEmail.execute(new SendRichEmailRequest(
+        user.getEmail().getValue(),
+        "Usuario",
+        "Reseteo de contraseña",
+        message
+      ));
+    } catch (RuntimeException ex) {
+      // TODO(PROD): restaurar el error para fallar la operacion si el email es obligatorio.
+      log.warn("No se pudo enviar el email de reseteo de contraseña para el usuario {}", user.getEmail().getValue(), ex);
+    }
   }
 }

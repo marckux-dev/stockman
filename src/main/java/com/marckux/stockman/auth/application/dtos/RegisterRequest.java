@@ -1,6 +1,5 @@
 package com.marckux.stockman.auth.application.dtos;
 
-import com.marckux.stockman.auth.application.validation.UniqueEmail;
 import com.marckux.stockman.shared.domain.constants.ValidationConstants;
 
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +12,6 @@ public record RegisterRequest(
       regexp = ValidationConstants.EMAIL_REGEX,
       message = "El formato del email no es válido"
     )
-    @UniqueEmail
     String email
 ) {
   public RegisterRequest {

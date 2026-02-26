@@ -13,6 +13,7 @@ import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.model.vo.Email;
 import com.marckux.stockman.auth.domain.model.vo.HashedPassword;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;
+import com.marckux.stockman.shared.domain.utils.SoftDeleteNameHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +33,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   public Optional<User> findByEmail(String email) {
     return jpaUserRepository
         .findByEmail(email)
+        .filter(UserEntity::isActive)
         .map(this::toDomain);
   }
 
@@ -39,6 +41,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   public Optional<User> findByToken(String token) {
     return jpaUserRepository
       .findByToken(token)
+      .filter(UserEntity::isActive)
       .map(this::toDomain);
   }
 
@@ -47,6 +50,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     return jpaUserRepository
         .findAll()
         .stream()
+        .filter(UserEntity::isActive)
         .map(this::toDomain)
         .collect(Collectors.toList());
   }
@@ -55,12 +59,17 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
   public Optional<User> findById(UUID id) {
     return jpaUserRepository
       .findById(id)
+      .filter(UserEntity::isActive)
       .map(this::toDomain);  
   }
 
   @Override
   public void deleteById(UUID id) {
-    jpaUserRepository.deleteById(id);
+    jpaUserRepository.findById(id).ifPresent(entity -> {
+      entity.setActive(false);
+      entity.setEmail(SoftDeleteNameHelper.buildRemovedName(entity.getEmail(), java.time.Instant.now()));
+      jpaUserRepository.save(entity);
+    });
   }
   
   public JpaUserRepository getJpaUserRepository() {
@@ -74,6 +83,11 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
     return User.builder()
         .id(userEntity.getId())
+        .createdAt(userEntity.getCreatedAt())
+        .updatedAt(userEntity.getUpdatedAt())
+        .createdBy(userEntity.getCreatedBy())
+        .updatedBy(userEntity.getUpdatedBy())
+        .isActive(userEntity.isActive())
         .email(Email.of(userEntity.getEmail()))
         .hashedPassword(hashedPassword)
         .activationStatus(userEntity.getActivationStatus() != null
@@ -94,9 +108,13 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
         .token(user.getToken())
         .tokenExpiration(user.getTokenExpiration())
         .role(user.getRole().name())
+        .isActive(user.isActive())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .createdBy(user.getCreatedBy())
+        .updatedBy(user.getUpdatedBy())
         .build();
 
   }
-
 
 }

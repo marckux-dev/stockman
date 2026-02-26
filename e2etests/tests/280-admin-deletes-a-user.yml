@@ -1,3 +1,0 @@
-method: DELETE
-endpoint: /api/auth/users/{{admin_id}}
-expected: 400

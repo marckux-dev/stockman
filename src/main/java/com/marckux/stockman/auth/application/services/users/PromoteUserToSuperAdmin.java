@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.marckux.stockman.auth.application.dtos.UserResponse;
 import com.marckux.stockman.auth.application.ports.in.usecases.PromoteUserToSuperAdminUseCase;
-import com.marckux.stockman.auth.domain.exceptions.InvalidAttributeException;
-import com.marckux.stockman.auth.domain.exceptions.ResourceNotFoundException;
+import com.marckux.stockman.shared.domain.exceptions.InvalidAttributeException;
+import com.marckux.stockman.shared.domain.exceptions.ResourceNotFoundException;
 import com.marckux.stockman.auth.domain.model.Role;
 import com.marckux.stockman.auth.domain.model.User;
 import com.marckux.stockman.auth.domain.ports.out.UserRepositoryPort;

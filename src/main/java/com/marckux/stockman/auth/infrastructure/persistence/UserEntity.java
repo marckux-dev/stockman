@@ -13,12 +13,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import com.marckux.stockman.auth.domain.model.ActivationStatus;
+import com.marckux.stockman.shared.infrastructure.persistence.auditing.AuditableJpaEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
@@ -26,8 +28,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class UserEntity {
+@SuperBuilder
+public class UserEntity extends AuditableJpaEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -52,5 +54,9 @@ public class UserEntity {
 
   @Column(name = "token_expiration")
   private Instant tokenExpiration;
+
+  @Builder.Default
+  @Column(name = "is_active", nullable = false)
+  private boolean isActive = true;
 
 }
